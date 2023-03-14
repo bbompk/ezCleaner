@@ -11,5 +11,5 @@ Folder-labeled based image dataset cleansing tool
 - type ',' and '.' to navigate
 - type '?' (shift + /) to temporary delete or 'X' (shift + x) to permanently delete
 - type 'K' (shift + k) to edit last move (temp delete or label change) (*cannot edit permanent delete!!*)
-- type character specified in `labelMapKey` to change key map to label change
-- output log in terminal and file when quit will show the last seen image file index
+- type character specified in `labelKeyMap` to change key map to label change
+- output log in terminal and `cleaner_last_pos.txt` when quit will show the last seen image file index
