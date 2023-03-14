@@ -26,7 +26,7 @@ if sys.platform == 'darwin' and '.DS_Store' in ls :
 print(ls)
 
 
-# In[99]:
+# In[116]:
 
 
 def changeLabel(fpath, fnames, label) :
@@ -36,14 +36,14 @@ def changeLabel(fpath, fnames, label) :
     shutil.move(fpath, newPath)
     return newPath
 
-def deleteFile(fpath, fname) :
+def deleteFile(fpath, fnames) :
     fname = fpath.split('/')[-1]
     fnames.remove(fname)
     newPath = unusedPath + '/' + fname
     shutil.move(fpath, newPath)
     return newPath
 
-def permaDeleteFile(fpath, fname) :
+def permaDeleteFile(fpath, fnames) :
     fname = fpath.split('/')[-1]
     fnames.remove(fname)
     os.remove(fpath)
@@ -65,16 +65,18 @@ labelKeyMap = {
 }
 
 
-# In[108]:
+# In[115]:
 
 
-subPath = 'road'
+# Specifify folder to explore and image index to open 
+subPath = 'sidewalk'
+pos = 282
+
 imgDir = basePath + '/' + subPath
-imgDir = '../testim'
+# imgDir = '../testim'
 fnames = os.listdir(imgDir)
 if sys.platform == 'darwin' and '.DS_Store' in fnames: 
     fnames.remove('.DS_Store')
-pos = 0
 
 # Check if path exists
 if len(fnames) == 0 :
@@ -104,7 +106,7 @@ while True :
       text = f"{pos}/{len(fnames)-1}",
       org = (50, 150),
       fontFace = cv2.FONT_HERSHEY_DUPLEX,
-      fontScale = 3.0,
+      fontScale = 2.7,
       color = (125, 246, 55),
       thickness = 3
     )
