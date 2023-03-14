@@ -1,44 +1,55 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[93]:
 
 
 import cv2
 import os
 import shutil
+import sys
 
 
-# In[42]:
+# In[94]:
 
 
 basePath = "../TraffyFondue/train"
 unusedPath = "../TraffyFondue/unused"
 
 
-# In[49]:
+# In[95]:
 
 
-print(os.listdir(basePath))
+ls = os.listdir(basePath)
+if sys.platform == 'darwin' and '.DS_Store' in ls : 
+    ls.remove('.DS_Store')
+print(ls)
 
 
-# In[67]:
+# In[99]:
 
 
 def changeLabel(fpath, fnames, label) :
     fname = fpath.split('/')[-1]
     fnames.remove(fname)
-    shutil.move(fpath, basePath + '/' + label + '/' + fname)
+    newPath = basePath + '/' + label + '/' + fname
+    shutil.move(fpath, newPath)
+    return newPath
 
 def deleteFile(fpath, fname) :
     fname = fpath.split('/')[-1]
     fnames.remove(fname)
-    shutil.move(fpath, unusedPath + '/' + fname)
+    newPath = unusedPath + '/' + fname
+    shutil.move(fpath, newPath)
+    return newPath
 
 def permaDeleteFile(fpath, fname) :
     fname = fpath.split('/')[-1]
     fnames.remove(fname)
     os.remove(fpath)
+    
+def restoreFile(lastPath, newPath) :
+    shutil.move(newPath, lastPath)
     
 labelKeyMap = {
     '!': 'sidewalk',
@@ -54,20 +65,31 @@ labelKeyMap = {
 }
 
 
-# In[71]:
+# In[108]:
 
 
 subPath = 'road'
 imgDir = basePath + '/' + subPath
-#imgDir = '../testim'
+imgDir = '../testim'
 fnames = os.listdir(imgDir)
-pos = 53
+if sys.platform == 'darwin' and '.DS_Store' in fnames: 
+    fnames.remove('.DS_Store')
+pos = 0
+
+# Check if path exists
 if len(fnames) == 0 :
     raise Exception("empty folder")
+if not os.path.exists(unusedPath) :
+    os.mkdir(unusedPath)
     
 # Create a OpenCV Window
 windowName = 'Cleannnnnn'
 cv2.namedWindow(windowName)
+
+last_pos = pos
+prev_fnames = fnames.copy()
+lastPath = ""
+newPath = ""
 
 while True :
     decIter = lambda p : max(0, p-1)
@@ -79,7 +101,7 @@ while True :
     img = cv2.imread(imgPath)
     img = cv2.putText(
       img = img,
-      text = f"{pos}/{len(fnames)}",
+      text = f"{pos}/{len(fnames)-1}",
       org = (50, 150),
       fontFace = cv2.FONT_HERSHEY_DUPLEX,
       fontScale = 3.0,
@@ -92,27 +114,52 @@ while True :
     wkey = cv2.waitKey(1) & 0xFF
     if chr(wkey) == 'q':
         break
+    # navigate left
     elif wkey == ord(',') :
         pos = decIter(pos)
         wkey = 0
         continue
+    # navigate right
     elif wkey == ord('.') :
         pos = incIter(pos)
         wkey = 0
         continue
+    # temporary delete
     elif wkey == ord('?') :
-        deleteFile(imgPath, fnames)
+        last_pos = pos
+        prev_fnames = fnames.copy()
+        lastPath = imgPath
+        newPath = deleteFile(imgPath, fnames)
         wkey = 0
         continue
+    # permanent delete
+    elif wkey == ord('X') :
+        permaDeleteFile(imgPath, fnames)
+        newPath = ''
+        lastPath = ''
+        wkey = 0
+        continue
+    # edit last move
+    elif wkey == ord('K') :
+        if lastPath == '' or newPath == '' :
+            wkey = 0
+            continue
+        fnames = prev_fnames.copy()
+        restoreFile(lastPath, newPath)
+        newPath = ''
+        lastPath = ''
+        pos = last_pos
+        wkey = 0
+        continue
+    # move to different label folder
     elif chr(wkey) in labelKeyMap.keys() :
+        last_pos = pos
         label = labelKeyMap[chr(wkey)]
         if label == subPath :
             continue
-        changeLabel(imgPath, fnames, label)
-        wkey = 0
-        continue
-    elif wkey == ord('X') :
-        permaDeleteFile(imgPath, fnames)
+        prev_fnames = fnames.copy()
+        lastPath = imgPath
+        newPath = changeLabel(imgPath, fnames, label)
         wkey = 0
         continue
 
@@ -128,5 +175,11 @@ with open("cleaner_last_pos.txt", 'a') as f :
 # In[ ]:
 
 
-# 76
+# 330
+
+
+# In[88]:
+
+
+
 
